@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tile Layout & Pattern Calculator | Precision Tile Estimator</title>
+    <meta name="description" content="Calculate total tile needed, exact waste multipliers for Herringbone, Running Bond, Offset, or Grid patterns, and grout estimates for your DIY project.">
+    <meta name="keywords" content="tile calculator, herringbone calculator, running bond estimator, tile waste multiplier, flooring layout tool, tile square footage">
+    <style>
+        :root {
+            --primary: #2b3a42;
+            --accent: #ff530d;
+            --light: #f4f7f6;
+            --dark: #1a252c;
+            --white: #ffffff;
+            --shadow: 0 4px 6px rgba(0,0,0,0.07);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            background: var(--primary);
+            color: var(--white);
+            border-radius: 8px 8px 0 0;
+            box-shadow: var(--shadow);
+        }
+
+        header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+            padding: 0 15px;
+        }
+
+        header p {
+            font-size: 14px;
+            color: #bdc3c7;
+        }
+
+        .calculator-card {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: var(--shadow);
+            margin-bottom: 25px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--primary);
+        }
+
+        .input-group input, .input-group select {
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus, .input-group select:focus {
+            border-color: var(--accent);
+        }
+
+        .btn-calc {
+            grid-column: 1 / -1;
+            background: var(--accent);
+            color: var(--white);
+            border: none;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-calc:hover {
+            background: #e04400;
+        }
+
+        .results-box {
+            margin-top: 25px;
+            padding: 20px;
+            background: #edf2f7;
+            border-left: 5px solid var(--accent);
+            border-radius: 4px;
+            display: none;
+        }
+
+        .results-box h3 {
+            margin-bottom: 15px;
+            color: var(--primary);
+            font-size: 18px;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .result-row:last-child {
+            border-bottom: none;
+        }
+
+        .result-val {
+            font-weight: bold;
+            color: var(--dark);
+        }
+
+        .seo-content {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            margin-bottom: 40px;
+        }
+
+        .seo-content h2 {
+            color: var(--primary);
+            font-size: 20px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--light);
+            padding-bottom: 5px;
+        }
+
+        .seo-content h3 {
+            color: var(--primary);
+            font-size: 16px;
+            margin: 15px 0 5px 0;
+        }
+
+        .seo-content p, .seo-content ul {
+            font-size: 15px;
+            color: #4a5568;
+            margin-bottom: 15px;
+        }
+
+        .seo-content ul {
+            padding-left: 20px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            font-size: 13px;
+            color: #718096;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+            margin: 0 10px;
+            cursor: pointer;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Modal styling */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: var(--white);
+            padding: 25px;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px; right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #a0aec0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Tile Layout & Pattern Calculator</h1>
+        <p>Accurate Square Footage, Box Estimates & Waste Adjustment Multipliers</p>
+    </header>
+
+    <div class="calculator-card">
+        <div class="form-grid">
+            <div class="input-group">
+                <label for="width">Room Width (Feet)</label>
+                <input type="number" id="width" placeholder="e.g. 12" step="any" required>
+            </div>
+            <div class="input-group">
+                <label for="length">Room Length (Feet)</label>
+                <input type="number" id="length" placeholder="e.g. 15" step="any" required>
+            </div>
+            <div class="input-group">
+                <label for="tile_w">Tile Width (Inches)</label>
+                <input type="number" id="tile_w" placeholder="e.g. 12" step="any" required>
+            </div>
+            <div class="input-group">
+                <label for="tile_l">Tile Length (Inches)</label>
+                <input type="number" id="tile_l" placeholder="e.g. 24" step="any" required>
+            </div>
+            <div class="input-group">
+                <label for="pattern">Installation Pattern</label>
+                <select id="pattern">
+                    <option value="10">Straight Grid (10% Waste)</option>
+                    <option value="12">Brick / Running Bond (12% Waste)</option>
+                    <option value="13">1/3 Offset Layout (13% Waste)</option>
+                    <option value="15">Diagonal Layout (15% Waste)</option>
+                    <option value="18">Herringbone Pattern (18% Waste)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="box_size">Sq Ft Per Box (Optional)</label>
+                <input type="number" id="box_size" placeholder="e.g. 15" step="any">
+            </div>
+
+            <button class="btn-calc" onclick="calculateTile()">Calculate Installation Materials</button>
+        </div>
+
+        <div class="results-box" id="results">
+            <h3>Calculated Project Breakdown</h3>
+            <div class="result-row">
+                <span>Net Surface Area:</span>
+                <span class="result-val" id="net_sqft">0.00 sq ft</span>
+            </div>
+            <div class="result-row">
+                <span>Pattern Waste Multiplier Applied:</span>
+                <span class="result-val" id="waste_factor">0%</span>
+            </div>
+            <div class="result-row">
+                <span>Total Square Footage to Order:</span>
+                <span class="result-val" id="total_sqft">0.00 sq ft</span>
+            </div>
+            <div class="result-row">
+                <span>Estimated Individual Tiles Needed:</span>
+                <span class="result-val" id="total_tiles">0</span>
+            </div>
+            <div class="result-row" id="box_row" style="display:none;">
+                <span>Total Product Boxes Required:</span>
+                <span class="result-val" id="total_boxes">0</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="seo-content">
+        <h2>Professional Guide to Tile Patterns & Material Allocation</h2>
+        <p>Planning a dynamic layout installation requires looking past simple length-times-width arithmetic. When tiles hit borders, walls, and fixed geometric transitions, they must be cut at specific structural intersecting planes. These cut remnants often cannot be re-used, creating real installation waste material loss.</p>
+
+        <h3>Understanding Pattern Specific Adjustments</h3>
+        <ul>
+            <li><strong>Straight Grid Layout:</strong> The simplest format. Tiles run parallel directly to the borders. Requires a tight baseline 10% waste buffer factor to account for wall cuts and layout adjustments.</li>
+            <li><strong>Brick / Running Bond (1/2 Offset):</strong> Each row is centered over the joint of the previous course. Requires a 12% factor due to constant alternating perimeter end-cuts.</li>
+            <li><strong>1/3 Offset Layout:</strong> Common for large-format modern rectangular plank planks ($12\times24$ or larger). This variation prevents natural center manufacturing warpage "lippage" profile issues by stepping transitions down incrementally. A 13% allocation factor is recommended.</li>
+            <li><strong>Diagonal Layout:</strong> Setting fields at a true 45-degree corner line creates premium dynamic scale perception but demands a high volume of true triangular triangular edge cuts on all 4 wall lines. Uses a strict 15% allowance framework.</li>
+            <li><strong>Herringbone Layout:</strong> An intricate, highly prized aesthetic pattern setup where rectangular ends meet side boundaries at clean geometric right angles. Because every single perimeter border interface requires compound angled layout trimming, a robust 18% to 20% waste multiplier must be accounted for to ensure you do not run short mid-run.</li>
+        </ul>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Precision Tools Network. All rights reserved.</p>
+        <p style="margin-top:10px;">
+            <a onclick="openModal('privacy')">Privacy Policy</a> | 
+            <a onclick="openModal('terms')">Terms of Service</a> | 
+            <a onclick="openModal('disclaimer')">Legal Disclaimer</a>
+        </p>
+    </footer>
+</div>
+
+<!-- Modals for Legal Documentation compliance -->
+<div class="modal" id="legalModal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <h2 id="modalTitle" style="margin-bottom:15px; color:var(--primary);"></h2>
+        <div id="modalBody" style="font-size:14px; color:#4a5568; line-height:1.5;"></div>
+    </div>
+</div>
+
+<script>
+    function calculateTile() {
+        const w = parseFloat(document.getElementById('width').value);
+        const l = parseFloat(document.getElementById('length').value);
+        const tileW = parseFloat(document.getElementById('tile_w').value);
+        const tileL = parseFloat(document.getElementById('tile_l').value);
+        const patternWaste = parseFloat(document.getElementById('pattern').value);
+        const boxSize = parseFloat(document.getElementById('box_size').value);
+
+        if(isNaN(w) || isNaN(l) || isNaN(tileW) || isNaN(tileL) || w <= 0 || l <= 0 || tileW <= 0 || tileL <= 0) {
+            alert("Please accurately input positive dimensional values for room and tile parameters.");
+            return;
+        }
+
+        const netSqft = w * l;
+        const wasteMultiplier = 1 + (patternWaste / 100);
+        const totalSqftNeeded = netSqft * wasteMultiplier;
+        
+        // Single tile area in sq ft
+        const singleTileSqft = (tileW * tileL) / 144;
+        const individualTiles = Math.ceil(totalSqftNeeded / singleTileSqft);
+
+        document.getElementById('net_sqft').innerText = netSqft.toFixed(2) + " sq ft";
+        document.getElementById('waste_factor').innerText = patternWaste + "% Allowance Factor";
+        document.getElementById('total_sqft').innerText = totalSqftNeeded.toFixed(2) + " sq ft";
+        document.getElementById('total_tiles').innerText = individualTiles.toLocaleString() + " Tiles";
+
+        const boxRow = document.getElementById('box_row');
+        if(!isNaN(boxSize) && boxSize > 0) {
+            const boxesNeeded = Math.ceil(totalSqftNeeded / boxSize);
+            document.getElementById('total_boxes').innerText = boxesNeeded.toLocaleString() + " Boxes";
+            boxRow.style.display = "flex";
+        } else {
+            boxRow.style.display = "none";
+        }
+
+        document.getElementById('results').style.display = "block";
+    }
+
+    const legalDocs = {
+        privacy: {
+            title: "Privacy Policy",
+            body: "This tracking document framework outlines user data handling parameters. This static micro-calculator configuration operates fully client-side inside your browser engine. We do not transmit, index, aggregate, or process room layout entries or personal structural configuration logs over independent server networks. Ad placement loops served by automated partnerships utilize standard cookie tracking variables completely governed within basic third-party compliance parameters."
+        },
+        terms: {
+            title: "Terms of Service",
+            body: "By interacting with this mathematical estimation platform, you acknowledge that all architectural calculations, waste adjustment values, and material metrics are automated projections. This interface is structured to act as an educational structural framework. Users accept full layout responsibility when finalizing independent supplier purchases from outside retailers."
+        },
+        disclaimer: {
+            title: "Legal & Construction Disclaimer",
+            body: "All dimensional conversions, tile box metrics, and geometric allowance factors provided inside this logic code reflect structural industry estimates. Real-world structural job-site conditions vary wildly based on field subfloor leveling variations, professional manual technique accuracy, and structural layout choices. No financial or structural liability is assumed based on material variances experienced during real-world applications."
+        }
+    };
+
+    function openModal(type) {
+        document.getElementById('modalTitle').innerText = legalDocs[type].title;
+        document.getElementById('modalBody').innerText = legalDocs[type].body;
+        document.getElementById('legalModal').style.display = "flex";
+    }
+
+    function closeModal() {
+        document.getElementById('legalModal').style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('legalModal');
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+</script>
+
+</body>
+                      </html>
+                      
